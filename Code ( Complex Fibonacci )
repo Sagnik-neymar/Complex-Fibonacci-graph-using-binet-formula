@@ -1,0 +1,22 @@
+from fractions import Fraction
+import math
+import numpy as np
+
+def fibonacee(n):                         # defining the Binet formula
+    
+    g1 = Fraction((1+math.sqrt(5))/2)     # Golden ratio
+    g2 = Fraction((1-math.sqrt(5))/2)     # inverse of the golden ratio
+    res = ((g1**n)-(g2**n))/math.sqrt(5) 
+    return res
+
+xlist = np.linspace(0,6, num=1000)        # creates an array containing values for input 
+ylist = []
+
+for i in range(0,1000):                   
+    a = Fraction(xlist[i])
+    b = (fibonacee(a))
+    ylist.append(b)                       # stores the output values of the binet formual in the ylist array
+    
+for j in range(0,1001):
+    print(ylist[j].imag)                       # printing the imaginary part of the outputs  
+                                               # replace '.imag' with '.real' to print the Real part
