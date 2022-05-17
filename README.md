@@ -5,4 +5,4 @@ Then the Real and imaginary parts of the outputs stored in the ylist are seperat
 
 Note: This is not a x-y graph. The graph assumes the (Imaginary part of the outputs as y-axis) and (Real part of the outputs as x-axis).
 
-python version: 3.10.0
+python version: 3.10.0 
