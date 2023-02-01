@@ -1,0 +1,330 @@
+# Window size is Fixed
+
+# pulling the GUI together ( experimantal) (copy1)
+
+# importing Libraries and modules
+# GUI Libraries
+import sys
+from PyQt5 import QtGui, QtSvg
+from PyQt5.QtWidgets import QApplication
+from turtle import window_width
+from PyQt5.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget, QFileDialog, QGridLayout, QTextEdit, QFrame
+from PyQt5.QtGui import QPixmap, QFont, QIcon
+from PyQt5 import QtGui, QtCore
+from PyQt5.QtGui import QCursor
+from PyQt5.QtCore import QRect
+from PyQt5.QtWebEngineWidgets import QWebEngineView
+# Mathematical imports
+import math
+from gettext import npgettext
+import numpy as np
+from sympy import *
+from sympy.abc import *
+# ------------------------------------------------------------------------------------------------>
+# Input
+global eq_list
+global eq_feed
+global var_list
+eq_list = []           # Enter equations here
+eq_feed = []
+var_list = []
+# -------------------------------------------------------------------------------------------------->
+
+app = QApplication(sys.argv)
+# --------------------------------------------------------------------------------------------------->
+global pageSource
+pageSource_dupe = """
+              <html><head>
+              <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> 
+              </script></head>
+              <body>
+              
+              </body></html>
+              
+              
+              
+              """
+
+
+
+# ------------------------------------------------------------------------------------------------>
+# button funcnalities
+    # frame 1 buttons:
+def star_comm():
+    temp_expr = str((my_text1.toPlainText()))
+    my_text1.setText(temp_expr + '*')
+
+def append_comm():
+    val = str((my_text1.toPlainText()))
+    my_text1.clear()
+    eq_list.append(val)
+    
+def reset_comm():
+    global eq_list
+    global eq_feed
+    global var_list
+    eq_list = []           # Enter equations here
+    eq_feed = []
+    var_list = []
+
+
+def lexer():
+    # var_list reading, IF POSSIBLE
+    try:
+        temp_var = str((my_text1.toPlainText()))
+        var_list.append(eval(temp_var))
+    except:
+        None
+
+    
+    global pageSource
+    pageSource = """
+              <html><head>
+              <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> 
+              </script></head>
+              <body>
+              
+              </body></html>
+              
+              
+              
+              """
+    
+    if len(eq_list) == 0:
+        pageSource = pageSource + '$$' "No \hspace{5mm} Equations \hspace{5mm} Recorded"  '$$'
+    
+    l = len(eq_list)
+    for i in range(0,l):
+        eq_list[i] = eq_list[i].replace('^','**')              # formatting ^
+        eq_list[i] = eq_list[i].replace('=',',')
+    
+    
+    # Converting into Eq( ) objects:
+    for eq in eq_list:
+        ind_equals = eq.index(',')
+        eq_ready = Eq(eval(eq[0:ind_equals]), eval(eq[ind_equals+1::]))
+
+        eq_feed.append(eq_ready)
+    
+    # Computing the solution
+    global solution
+    try:
+        if len(var_list) == 1 and degree(eq_feed(0)) != 1:
+            solution = solve((eval(eq_list[0])))
+        else:
+            solution = solve(eq_feed)
+    except:
+        solution = solve(eq_feed)
+        
+    # Latex --> MathJax
+    Lat_sol = []
+    # converting the solutions into LaTeX strings
+    for sol in solution:
+        Lat_sol.append(latex(sol))
+        
+    # pageSource edit
+    if type(solution) == list and len(solution) != 0:
+        if type(solution[0]) == dict:
+            for eq in Lat_sol:
+                pageSource = pageSource + '$$' + eq + '$$'
+        if type(solution[0]) != dict and len(solution) ==  1:
+            pageSource = pageSource  + '$$' + str(var_list[0]) + ' = ' + Lat_sol[0] + '$$'
+    if type(solution) == dict:
+            pageSource = pageSource + '$$' + latex(str(solution)) + '$$'
+            
+    svgWidget1.close()
+    frame2()
+    
+# | ----------------------------- |   
+    # frame 2 buttons:
+def back_comm():
+    global eq_list
+    global eq_feed
+    global var_list
+    global pageSource
+    eq_list = []           # Enter equations here
+    eq_feed = []
+    var_list = []
+    pageSource = """
+              <html><head>
+              <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS-MML_HTMLorMML"> 
+              </script></head>
+              <body>
+              
+              </body></html>
+              
+              
+              
+              """
+    svgWidget2.close()
+    frame1()
+
+# --------------------------------------------------------------------------------------------------->
+
+# svg widget1 / Main Window
+svgWidget1 = QtSvg.QSvgWidget('Landing_Page_1.svg')
+svgWidget1.setGeometry(200,50,1100,600)
+svgWidget1.setFixedSize(1100,600)
+svgWidget1.setWindowTitle("Test GUI")
+svgWidget1.setWindowIcon(QIcon('Untitled.jpg'))
+
+# svg widget2 / Result Window
+svgWidget2 = QtSvg.QSvgWidget('Doubs.svg')
+svgWidget2.setGeometry(200,50,1100,600)
+svgWidget2.setFixedSize(1100,600)
+svgWidget2.setWindowTitle("Test GUI")
+svgWidget2.setWindowIcon(QIcon('Untitled.jpg'))
+# ------------------------------------------------------------------------------------------------------>
+
+# Creating frame 1
+def frame1():
+    
+
+    # Textbox widget (Equation Input Field)
+    global my_text1
+    my_text1 = QTextEdit(svgWidget1, lineWrapMode=QTextEdit.FixedColumnWidth,
+        lineWrapColumnOrWidth=50,
+        placeholderText="Enter Equation",
+        readOnly=False  
+    )
+    my_text1.setStyleSheet(  
+        "border: 2px solid '#000099';" +
+        "font-size: 15px;"
+    )
+    my_text1.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+    my_text1.setGeometry(QRect(170, 240, 611, 41))
+
+    
+
+
+    # Textbox widget (List of variables)
+    global my_text2
+    my_text2 = QTextEdit(svgWidget1, lineWrapMode=QTextEdit.FixedColumnWidth,
+        lineWrapColumnOrWidth=50,
+        placeholderText="Enter single variable",
+        readOnly=False  
+    )
+    my_text2.setStyleSheet(  
+        "border: 1px solid '#000099';" +
+        "font-size: 13px;"
+    )
+    my_text2.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+    my_text2.setGeometry(QRect(170, 290, 171, 31))
+    
+    
+
+
+    # button widget (append button)
+    global button1
+    button1 = QPushButton(svgWidget1)
+    button1.setText("A P P E N D")
+    button1.setFont(QFont('Times', 15))
+    button1.setGeometry(QRect(820, 240, 131, 41))
+    button1.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+    button1.setStyleSheet(
+        "*{border: 3px solid '#000099';" + 
+        "background-color: '#66ccff';" + 
+        "border-radius: 6px;" + 
+        "font-size: 15px;" + 
+        "color: '#000066'}" + 
+        "*:hover{background: '#0088cc';}" + 
+        "*:pressed{background: '#ff9900';}"
+    )
+    button1.clicked.connect(append_comm)
+    
+    
+
+    # button widget (solve button)
+    global button2
+    button2 = QPushButton(svgWidget1)
+    button2.setText(" S  O  L  V  E ")
+    button2.setFont(QFont('Times', 15))
+    button2.setGeometry(QRect(450, 340, 191, 61))
+    button2.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+    button2.setStyleSheet(
+        "*{border: 3px solid '#000099';" + 
+        "background-color: '#66ccff';" + 
+        "border-radius: 6px;" + 
+        "font-size: 15px;" + 
+        "color: '#5900b3'}" + 
+        "*:hover{background: '#0088cc';}" + 
+        "*:pressed{background: '#ff0066';}"
+    )
+    button2.clicked.connect(lexer)
+    
+    
+
+    # button widget (Reset button)
+    global button3
+    button3 = QPushButton(svgWidget1)
+    button3.setText("R E S E T")
+    button3.setFont(QFont('Times', 15))
+    button3.setGeometry(QRect(970, 240, 101, 41))
+    button3.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+    button3.setStyleSheet(
+        "*{border: 3px solid '#b30000';" + 
+        "background-color: '#ff6600';" + 
+        "border-radius: 6px;" + 
+        "font-size: 15px;" + 
+        "color: '#ffffff'}" + 
+        "*:hover{background: '#ff9933';}" + 
+        "*:pressed{background: '#ff0066';}"
+    )
+    button3.clicked.connect(reset_comm)
+    
+    # button widget (* button)
+    global button4
+    button4 = QPushButton(svgWidget1)
+    button4.setText(" * ")
+    button4.setFont(QFont('Times', 15))
+    button4.setGeometry(QRect(350, 290, 31, 31))
+    button4.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+    button4.setStyleSheet(
+        "*{border: 2px solid '#000099';" + 
+        "background-color: '#ff6600';" + 
+        "border-radius: 6px;" + 
+        "font-size: 15px;" + 
+        "color: '#ffffff'}" + 
+        "*:hover{background: '#ff8533';}" + 
+        "*:pressed{background: '#ffffff';}"
+    )
+    button4.clicked.connect(star_comm)
+    
+    # Execution
+    svgWidget1.show()
+
+# Creating frame 2
+def frame2():
+
+
+    # QWebEngine widget
+    webView = QWebEngineView(svgWidget2)
+    webView.setHtml(pageSource)
+    webView.setGeometry(QRect(39, 80, 1021, 461))
+    
+    # button widget (back button)
+    global button5
+    button5 = QPushButton(svgWidget2)
+    button5.setText("B A C K")
+    button5.setFont(QFont('Times', 15))
+    button5.setGeometry(QRect(510, 550, 111, 41))
+    button5.setCursor(QCursor(QtCore.Qt.PointingHandCursor))
+    button5.setStyleSheet(
+            "*{border: 3px solid '#b30000';" + 
+            "background-color: '#ff6600';" + 
+            "border-radius: 6px;" + 
+            "font-size: 15px;" + 
+            "color: '#ffffff'}" + 
+            "*:hover{background: '#ff9933';}" + 
+            "*:pressed{background: '#ff0066';}"
+        )
+    button5.clicked.connect(back_comm)
+    
+    # Execution
+    svgWidget2.show()
+
+
+# flow starts   
+frame1()
+
+sys.exit(app.exec_())
